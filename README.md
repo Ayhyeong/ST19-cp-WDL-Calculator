@@ -14,7 +14,7 @@ The printed cp is `round(100 * v / a)`. Draw is `1000 - W - L`.
 
 ## Sources
 
-- Coefficients and formulas: Stockfish 19, tag `sf_19`,
+- Coefficients and formulas: Stockfish 19, @official-stockfish,
   [`src/uci.cpp`](https://github.com/official-stockfish/Stockfish/blob/sf_19/src/uci.cpp)
 - Model fitting: <https://github.com/official-stockfish/WDL_model>
 
