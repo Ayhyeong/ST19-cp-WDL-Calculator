@@ -3,7 +3,7 @@
 Converts the centipawn score printed by Stockfish 19 to win/draw/loss odds
 and back. Single static HTML page, no build step.
 
-Live page: https://Ayhyeong.github.io/ST19-cp-WDL-Calculator/
+Live page: https://ayhyeong.github.io/ST19-cp-WDL-Calculator/
 
 ## How it works
 
