@@ -1,3 +1,18 @@
+<!--
+  Stockfish 19 WDL Calculator
+  Copyright (C) 2026 Ayhyeong
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  The WDL model coefficients and formulas are taken from Stockfish 19
+  (@official-stockfish), src/uci.cpp, Copyright (C) 2004-2026 The Stockfish
+  developers, licensed under GPL-3.0-or-later:
+  https://github.com/official-stockfish/Stockfish/blob/sf_19/src/uci.cpp
+-->
+
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Stockfish 19 WDL Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -188,18 +203,17 @@ tr:last-child td { border-bottom: 0; }
         </div>
         <input type="range" id="mat-range" min="17" max="78" step="1" value="58" aria-label="Material count slider">
       </div>
-      <div class="chips" id="chips"></div>
       <p class="note" id="mat-note">Pawn 1, knight 3, bishop 3, rook 5, queen 9, both sides added together. The model is fitted for 17 to 78.</p>
       <details>
         <summary>Count from pieces</summary>
         <div class="pieces">
-          <div><label for="pc-p">Pawns</label><input type="text" inputmode="numeric" id="pc-p" value="16"></div>
-          <div><label for="pc-n">Knights</label><input type="text" inputmode="numeric" id="pc-n" value="4"></div>
-          <div><label for="pc-b">Bishops</label><input type="text" inputmode="numeric" id="pc-b" value="4"></div>
-          <div><label for="pc-r">Rooks</label><input type="text" inputmode="numeric" id="pc-r" value="4"></div>
-          <div><label for="pc-q">Queens</label><input type="text" inputmode="numeric" id="pc-q" value="2"></div>
+          <div><label for="pc-p">Pawns</label><input type="text" inputmode="numeric" id="pc-p" autocomplete="off"></div>
+          <div><label for="pc-n">Knights</label><input type="text" inputmode="numeric" id="pc-n" autocomplete="off"></div>
+          <div><label for="pc-b">Bishops</label><input type="text" inputmode="numeric" id="pc-b" autocomplete="off"></div>
+          <div><label for="pc-r">Rooks</label><input type="text" inputmode="numeric" id="pc-r" autocomplete="off"></div>
+          <div><label for="pc-q">Queens</label><input type="text" inputmode="numeric" id="pc-q" autocomplete="off"></div>
         </div>
-        <p class="note" style="margin-top:8px;">Totals for both sides. Kings do not count.</p>
+        <p class="note" style="margin-top:8px;">Totals for both sides. Kings do not count. Fill in all five to calculate the material count. Use 0 for a piece type that is not on the board.</p>
       </details>
     </div>
   </section>
@@ -270,6 +284,7 @@ tr:last-child td { border-bottom: 0; }
   <footer class="foot">
     <p>Coefficients are copied from <code>win_rate_params</code> in <a href="https://github.com/official-stockfish/Stockfish/blob/sf_19/src/uci.cpp" target="_blank" rel="noopener">src/uci.cpp at tag sf_19</a>, the Stockfish 19 release of 5 September 2026. The score the engine prints is <code>round(100 · v / a)</code>, so cp and WDL are two views of one internal value. The development branch carries different coefficients, so results here match release builds only.</p>
     <p>Mate and tablebase scores are not converted. Win and loss use <code>1 / (1 + exp((a − v) / b))</code>, draw is 1000 − W − L, each rounded as the engine does.</p>
+    <p>Unofficial tool. Not affiliated with or endorsed by the Stockfish developers. Model coefficients and formulas come from Stockfish 19 (@official-stockfish), src/uci.cpp, © 2004–2026 The Stockfish developers, GPL-3.0-or-later. This page is released under GPL-3.0-or-later. Source: https://github.com/Ayhyeong/ST19-cp-WDL-Calculator Provided without warranty.</p>
   </footer>
 </main>
 
@@ -387,26 +402,14 @@ if (typeof module !== 'undefined') {
   const fmtCp = n => sign(Math.round(n)) + Math.abs(Math.round(n));
 
   /* ---------- material ---------- */
-  const PRESETS = [
-    [78, 'Initial position'],
-    [58, 'Model anchor'],
-    [30, 'Endgame'],
-    [20, 'Rook ending']
-  ];
-  function buildChips() {
-    $('chips').innerHTML = PRESETS.map(
-      p => '<button type="button" class="chip" data-m="' + p[0] + '" aria-pressed="false">' + p[1] + ' · ' + p[0] + '</button>'
-    ).join('');
-  }
+  const PIECE_IDS = ['pc-p', 'pc-n', 'pc-b', 'pc-r', 'pc-q'];
+  function clearPieces() { PIECE_IDS.forEach(id => { $(id).value = ''; }); }
   function renderMaterial() {
     const p = wdlParams(state.material);
     if (document.activeElement !== $('mat-num')) $('mat-num').value = String(state.material);
     $('mat-range').value = String(p.material);
     $('par-a').textContent = p.a.toFixed(2);
     $('par-b').textContent = p.b.toFixed(2);
-    $('chips').querySelectorAll('.chip').forEach(c =>
-      c.setAttribute('aria-pressed', String(Number(c.dataset.m) === state.material))
-    );
     const clamped = state.material !== p.material;
     const note = $('mat-note');
     if (clamped) {
@@ -625,8 +628,10 @@ if (typeof module !== 'undefined') {
   }
 
   /* ---------- wiring ---------- */
-  function setMaterial(m) {
+  // A material set by the slider or the number box no longer matches any piece counts, so they are cleared.
+  function setMaterial(m, keepPieces) {
     state.material = m;
+    if (!keepPieces) clearPieces();
     renderAll();
   }
   $('mat-num').addEventListener('input', e => {
@@ -635,14 +640,16 @@ if (typeof module !== 'undefined') {
   });
   $('mat-num').addEventListener('blur', () => { $('mat-num').value = String(state.material); });
   $('mat-range').addEventListener('input', e => setMaterial(Number(e.target.value)));
-  $('chips').addEventListener('click', e => {
-    const b = e.target.closest('.chip');
-    if (b) setMaterial(Number(b.dataset.m));
-  });
-  ['p', 'n', 'b', 'r', 'q'].forEach(k =>
-    $('pc-' + k).addEventListener('input', () => {
-      const n = id => { const v = parseNum($(id).value); return Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0; };
-      setMaterial(n('pc-p') + 3 * n('pc-n') + 3 * n('pc-b') + 5 * n('pc-r') + 9 * n('pc-q'));
+  // Piece counts calculate material only when all five fields hold a whole number of 0 or more.
+  PIECE_IDS.forEach(id =>
+    $(id).addEventListener('input', () => {
+      const counts = PIECE_IDS.map(i => {
+        const t = $(i).value.trim();
+        return /^\d+$/.test(t) ? parseInt(t, 10) : NaN;
+      });
+      if (!counts.every(Number.isFinite)) return;
+      const [p, n, b, r, q] = counts;
+      setMaterial(p + 3 * n + 3 * b + 5 * r + 9 * q, true);
     })
   );
 
@@ -701,7 +708,6 @@ if (typeof module !== 'undefined') {
   (function init() {
     const e = cpToWdl(state.cp, state.material).engine;
     state.vals = { w: e.w, d: e.d, l: e.l };
-    buildChips();
     renderAll();
   })();
 })();
