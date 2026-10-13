@@ -13,7 +13,11 @@
   https://github.com/official-stockfish/Stockfish/blob/sf_19/src/uci.cpp
 -->
 
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stockfish 19 cp ↔ WDL Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,13 +87,13 @@ body {
   padding-block: 28px 48px;
 }
 .wrap { max-width: 1040px; margin-inline: auto; display: flex; flex-direction: column; gap: 20px; }
-h1, h2, h3, p { margin: 0; }
+h1, h2, p { margin: 0; }
 h1 { font-size: clamp(1.6rem, 4.4vw, 2.2rem); line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; }
 h2 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.005em; text-wrap: balance; }
 .kicker { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
 .lede { color: var(--muted); max-width: 62ch; margin-top: 10px; }
 a { color: var(--accent); }
-code, .mono { font-family: var(--mono); }
+code { font-family: var(--mono); }
 
 .top { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-end; justify-content: space-between; }
 .top > div:first-child { min-width: 0; flex: 1 1 360px; }
@@ -106,10 +110,6 @@ code, .mono { font-family: var(--mono); }
 .params { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
 .mat-controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; }
 .mat-controls input[type="range"] { flex: 1 1 200px; min-width: 0; accent-color: var(--accent); }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { font: inherit; font-size: 0.82rem; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; cursor: pointer; }
-.chip:hover { border-color: var(--accent); }
-.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .note { font-size: 0.82rem; color: var(--muted); }
 .note.warn { color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 10px; }
 details { font-size: 0.88rem; }
@@ -177,6 +177,8 @@ tr:last-child td { border-bottom: 0; }
 @media (prefers-reduced-motion: no-preference) { .bar span { transition: width .15s ease; } }
 </style>
 
+</head>
+<body>
 <main class="wrap">
   <header class="top">
     <div>
@@ -255,11 +257,10 @@ tr:last-child td { border-bottom: 0; }
         <p class="sub" id="r-exact"></p>
         <dl class="kv" style="margin-top: 14px;">
           <dt>Range from input rounding</dt><dd id="r-range"></dd>
+          <dt>Range if material is unknown</dt><dd id="r-any"></dd>
           <dt>Implied material</dt><dd id="r-mat"></dd>
-          <dt id="r-w-dt">From win alone</dt><dd id="r-wa"></dd>
-          <dt id="r-l-dt">From loss alone</dt><dd id="r-la"></dd>
         </dl>
-        <p class="note" style="margin-top: 10px;">The score from W and L together does not depend on material. A single value needs the material count above.</p>
+        <p class="note" style="margin-top: 10px;">Exact win and loss give the same score at any material. Engine values are rounded to whole per mille, so the material count above is used to narrow the range. A win or loss on its own always needs it.</p>
       </div>
     </section>
   </div>
@@ -283,8 +284,8 @@ tr:last-child td { border-bottom: 0; }
 
   <footer class="foot">
     <p>Coefficients are copied from <code>win_rate_params</code> in <a href="https://github.com/official-stockfish/Stockfish/blob/sf_19/src/uci.cpp" target="_blank" rel="noopener">src/uci.cpp at tag sf_19</a>, the Stockfish 19 release of 5 September 2026. The score the engine prints is <code>round(100 · v / a)</code>, so cp and WDL are two views of one internal value. The development branch carries different coefficients, so results here match release builds only.</p>
-    <p>Mate and tablebase scores are not converted. Win and loss use <code>1 / (1 + exp((a − v) / b))</code>, draw is 1000 − W − L, each rounded as the engine does.</p>
-    <p>Unofficial tool. Not affiliated with or endorsed by the Stockfish developers. Model coefficients and formulas come from Stockfish 19 (@official-stockfish), src/uci.cpp, © 2004–2026 The Stockfish developers, GPL-3.0-or-later. This page is released under GPL-3.0-or-later. Source: https://github.com/Ayhyeong/ST19-cp-WDL-Calculator Provided without warranty.</p>
+    <p>Mate and tablebase scores are not converted. Win and loss use <code>1 / (1 + exp((a − v) / b))</code>, draw is 1000 − W − L, each rounded as the engine does. The engine's internal v is a whole number and about three values of v share each cp, so for the same cp it can print a triple 1 to 2 per mille away from the one shown here. This page uses the middle of the cp bin.</p>
+    <p>Unofficial tool. Not affiliated with or endorsed by the Stockfish developers. Model coefficients and formulas come from Stockfish 19 (@official-stockfish), src/uci.cpp, © 2004–2026 The Stockfish developers, GPL-3.0-or-later. This page is released under GPL-3.0-or-later. Source: <a href="https://github.com/Ayhyeong/ST19-cp-WDL-Calculator" target="_blank" rel="noopener">https://github.com/Ayhyeong/ST19-cp-WDL-Calculator</a> Provided without warranty.</p>
   </footer>
 </main>
 
@@ -312,7 +313,9 @@ function winPermille(v, a, b) {
   return 1000 / (1 + Math.exp((a - v) / b));
 }
 
-/* cp is the UCI score. Internal value v = cp * a / 100 (inverse of to_cp). */
+/* cp is the UCI score. Internal value v = cp * a / 100 (inverse of to_cp).
+   The engine's own v is a whole number and about three values of v share one cp, so the triple it
+   prints for a given cp can differ from this one by 1 to 2 per mille. This uses the middle of the cp bin. */
 function cpToWdl(cp, material) {
   const { a, b } = wdlParams(material);
   const v = (cp * a) / 100;
@@ -327,7 +330,7 @@ function cpToWdl(cp, material) {
   };
 }
 
-/* W and L in per mille. Material independent:
+/* W and L in per mille. Material independent for exact values:
    cp = 100 * (ln(1/L-1) - ln(1/W-1)) / (ln(1/L-1) + ln(1/W-1)).
    ratio = a / b of the position. Returns null outside 0 < W, L and W + L < 1000. */
 function wdlToCp(w, l) {
@@ -366,8 +369,57 @@ function impliedMaterial(ratio) {
   return { material: best.material, inRange };
 }
 
+/* Engine output is rounded to whole per mille, so integer W and L stand for a box of +-0.5 each.
+   Returns the wdlToCp result at each corner of that box. A corner where W + L reaches 1000 is skipped. */
+function roundingCorners(w, l) {
+  const out = [];
+  [-0.5, 0.5].forEach(dw => [-0.5, 0.5].forEach(dl => {
+    const q = wdlToCp(w + dw, l + dl);
+    if (q) out.push(q);
+  }));
+  return out;
+}
+
+/* Score range from integer W and L alone, with no material. Both are above 0. */
+function cpRangePair(w, l) {
+  const cps = roundingCorners(w, l).map(q => q.cp);
+  return cps.length ? { lo: Math.min(...cps), hi: Math.max(...cps) } : null;
+}
+
+/* Score range at a known material. W rises with cp and L falls with it, so each of the two rounded
+   values gives an interval and the answer is where both hold. A side that is 0 only says it is
+   below 0.5, which leaves that end open. Returns null when no score at this material gives both
+   values. For integer W and L with W + L <= 999 and not both 0, both ends are finite. */
+function cpRangeAtMaterial(w, l, material) {
+  const side = x => {
+    const c = cpFromWin(x, material);
+    return c === null ? (x <= 0 ? -Infinity : Infinity) : c;
+  };
+  const lo = Math.max(side(Math.max(0, w - 0.5)), -side(Math.min(1000, l + 0.5)));
+  const hi = Math.min(side(Math.min(1000, w + 0.5)), -side(Math.max(0, l - 0.5)));
+  return lo <= hi ? { lo, hi } : null;
+}
+
+/* Material counts that fit integer W and L above 0. a/b falls as W or L rises, so the extremes sit at
+   the corners of the rounding box. Returns the best match and the lowest and highest corner match. */
+function impliedMaterialRange(w, l) {
+  const pair = wdlToCp(w, l);
+  if (!pair) return null;
+  const base = impliedMaterial(pair.ratio);
+  const mats = roundingCorners(w, l).map(q => impliedMaterial(q.ratio).material);
+  return {
+    material: base.material,
+    inRange: base.inRange,
+    lo: Math.min(base.material, ...mats),
+    hi: Math.max(base.material, ...mats)
+  };
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { SF19, wdlParams, cpToWdl, wdlToCp, cpFromWin, impliedMaterial };
+  module.exports = {
+    SF19, wdlParams, cpToWdl, wdlToCp, cpFromWin, impliedMaterial,
+    roundingCorners, cpRangePair, cpRangeAtMaterial, impliedMaterialRange
+  };
 }
 
 (function () {
@@ -400,6 +452,16 @@ if (typeof module !== 'undefined') {
   const toPm = x => (state.unit === 'pct' ? x * 10 : x);
   const sign = n => (n > 0 ? '+' : n < 0 ? '−' : '');
   const fmtCp = n => sign(Math.round(n)) + Math.abs(Math.round(n));
+  const fmtExact = n => (n >= 0 ? '+' : '−') + Math.abs(n).toFixed(1);
+  // Whole cp, or one decimal when both ends would round to the same whole cp.
+  const fmtRange = r => {
+    const a = fmtCp(r.lo), b = fmtCp(r.hi);
+    if (a !== b) return a + ' to ' + b;
+    const c = fmtExact(r.lo), e = fmtExact(r.hi);
+    return c === e ? c : c + ' to ' + e;
+  };
+  /* The material the model actually uses, after the clamp to 17..78. */
+  const effMaterial = () => wdlParams(state.material).material;
 
   /* ---------- material ---------- */
   const PIECE_IDS = ['pc-p', 'pc-n', 'pc-b', 'pc-r', 'pc-q'];
@@ -419,7 +481,7 @@ if (typeof module !== 'undefined') {
       note.className = 'note';
       note.textContent = 'Pawn 1, knight 3, bishop 3, rook 5, queen 9, both sides added together. The model is fitted for 17 to 78.';
     }
-    $('ch-mat').textContent = String(state.material);
+    $('ch-mat').textContent = String(p.material);
   }
 
   /* ---------- cp -> WDL ---------- */
@@ -453,6 +515,10 @@ if (typeof module !== 'undefined') {
     const x = state.vals[a], y = state.vals[b];
     state.vals[dk] = Number.isFinite(x) && Number.isFinite(y) ? 1000 - x - y : NaN;
   }
+  function fmtMaterial(im) {
+    const a = Math.round(im.lo ?? im.material), b = Math.round(im.hi ?? im.material);
+    return '≈ ' + Math.round(im.material) + (a === b ? '' : ' (' + a + ' to ' + b + ')') + (im.inRange ? '' : ', outside 17 to 78');
+  }
   function renderWdl() {
     const active = document.activeElement;
     KEYS.forEach(k => {
@@ -465,56 +531,64 @@ if (typeof module !== 'undefined') {
     const { w, d, l } = state.vals;
     const msg = $('wdl-msg'), res = $('wdl-res');
     const fail = text => { msg.textContent = text; msg.hidden = false; res.hidden = true; };
+    const show = (big, text, range, any, mat) => {
+      msg.hidden = true; res.hidden = false;
+      $('r-cp').textContent = big;
+      $('r-exact').textContent = text;
+      $('r-range').textContent = range;
+      $('r-any').textContent = any;
+      $('r-mat').textContent = mat;
+    };
     if (![w, d, l].every(Number.isFinite)) return fail('Enter any two of win, draw and loss.');
     if ([w, d, l].some(x => x < -1e-9)) return fail('Win, draw and loss must be positive and add up to 100%.');
-    if (d <= 1e-9) return fail('A draw of exactly 0% means the score is unbounded. Enter a draw above 0.');
+    const mat = effMaterial();
     const wz = w <= 1e-9, lz = l <= 1e-9;
+    if (d <= 1e-9) {
+      // Stockfish prints 1000 0 0 once win rounds to 1000, and 0 0 1000 for loss, so the score is only bounded.
+      if (!wz && !lz) return fail('A draw of 0% only occurs with a win or loss of 100%. Enter a draw above 0.');
+      const bound = cpFromWin(999.5, mat);
+      const c = lz ? bound : -bound;
+      return show((lz ? '≥ ' : '≤ ') + fmtCp(c),
+        'Stockfish prints ' + (lz ? '1000 0 0' : '0 0 1000') + ' from ' + fmtExact(c) + ' cp ' + (lz ? 'upward' : 'downward') + ' at material ' + mat + ', so only a bound is known.',
+        '–', '–', '–');
+    }
     if (wz && lz) return fail('Win and loss are both 0, which only says the score is near 0 cp. Enter a non-zero win or loss.');
-    const mat = state.material;
-    let cp, range = '–', how = '', ratio = null;
-    if (wz || lz) {
-      // One side rounds to zero (common in engine output), so the pair formula is unbounded.
-      // Use the non-zero side with the chosen material instead.
-      const sgn = wz ? -1 : 1;
-      const val = wz ? l : w;
-      const c0 = cpFromWin(val, mat);
-      if (c0 === null) return fail('A win or loss of exactly 100% means the score is unbounded. Enter values below 100%.');
-      cp = sgn * c0;
-      if (Number.isInteger(val)) {
-        const lo = cpFromWin(val - 0.5, mat), hi = cpFromWin(val + 0.5, mat);
-        if (lo !== null && hi !== null) range = fmtCp(Math.min(sgn * lo, sgn * hi)) + ' to ' + fmtCp(Math.max(sgn * lo, sgn * hi));
-      }
-      how = (wz ? 'Win' : 'Loss') + ' is 0, so this uses ' + (wz ? 'loss' : 'win') + ' alone at material ' + mat + '. ';
+
+    // Per mille integers are read as rounded engine output. Anything else is read as exact.
+    const rounded = Number.isInteger(w) && Number.isInteger(l);
+    const oneSided = wz || lz;
+    let cp, kind = 'Exact value', how = '', range = '–', any = '–', matText = '–';
+    const fit = rounded ? cpRangeAtMaterial(w, l, mat) : null;
+    if (fit) {
+      // Both values agree with the chosen material, so use the narrowest range they allow.
+      cp = (fit.lo + fit.hi) / 2;
+      kind = 'Middle of the range';
+      range = fmtRange(fit);
+      how = oneSided
+        ? (wz ? 'Win' : 'Loss') + ' is 0, so the score comes from ' + (wz ? 'loss' : 'win') + ' at material ' + mat + '. '
+        : 'Uses material ' + mat + '. ';
+    } else if (oneSided) {
+      const c = cpFromWin(wz ? l : w, mat);
+      cp = wz ? -c : c;
+      how = (wz ? 'Win' : 'Loss') + ' is 0, so this uses ' + (wz ? 'loss' : 'win') + ' alone at material ' + mat + (rounded ? ', which does not fit both values. ' : '. ');
     } else {
-      const r = wdlToCp(w, l);
-      if (!r) return fail('These values do not give a valid score. Win and loss must be above 0 and sum to less than 100%.');
-      cp = r.cp; ratio = r.ratio;
-      // rounding window, only meaningful when the inputs look like engine per mille integers
-      if (Number.isInteger(w) && Number.isInteger(l)) {
-        const cps = [];
-        [-0.5, 0.5].forEach(dw => [-0.5, 0.5].forEach(dl => {
-          const q = wdlToCp(w + dw, l + dl);
-          if (q) cps.push(q.cp);
-        }));
-        if (cps.length) range = fmtCp(Math.min(...cps)) + ' to ' + fmtCp(Math.max(...cps));
+      const pair = wdlToCp(w, l);
+      if (!pair) return fail('Win and loss must leave room for a draw.');
+      cp = pair.cp;
+      if (rounded) {
+        how = 'Win and loss do not fit material ' + mat + ', so this leaves material out. ';
+        range = fmtRange(cpRangePair(w, l));
+      } else {
+        how = 'Win and loss together fix the score, whatever the material. ';
       }
     }
-    msg.hidden = true; res.hidden = false;
-    $('r-cp').textContent = fmtCp(cp);
-    $('r-exact').textContent = how + 'Exact value ' + (cp >= 0 ? '+' : '−') + Math.abs(cp).toFixed(1) + ' cp';
-    $('r-range').textContent = range;
-    if (ratio === null) {
-      $('r-mat').textContent = '–';
-    } else {
-      const im = impliedMaterial(ratio);
-      $('r-mat').textContent = '≈ ' + Math.round(im.material) + (im.inRange ? '' : ' (outside 17 to 78)');
+    if (rounded && !oneSided) {
+      any = fmtRange(cpRangePair(w, l));
+      matText = fmtMaterial(impliedMaterialRange(w, l));
+    } else if (!oneSided) {
+      matText = fmtMaterial(impliedMaterial(wdlToCp(w, l).ratio));
     }
-    const r = null; void r;
-    const cw = cpFromWin(w, state.material), cl = cpFromWin(l, state.material);
-    $('r-w-dt').textContent = 'From win alone at material ' + state.material;
-    $('r-l-dt').textContent = 'From loss alone at material ' + state.material;
-    $('r-wa').textContent = cw === null ? '–' : fmtCp(cw) + ' cp';
-    $('r-la').textContent = cl === null ? '–' : fmtCp(-cl) + ' cp';
+    show(fmtCp(cp), how + kind + ' ' + fmtExact(cp) + ' cp', range, any, matText);
   }
 
   /* ---------- chart ---------- */
@@ -597,10 +671,8 @@ if (typeof module !== 'undefined') {
     if (left + 170 > wrap.width) left = ev.clientX - wrap.left - 170;
     tip.style.left = Math.max(0, left) + 'px';
     tip.style.top = Math.max(0, ev.clientY - wrap.top - 80) + 'px';
-    const rect = $('chart').getBoundingClientRect();
     const x = X(cp);
     $('hover').innerHTML = '<line x1="' + x + '" x2="' + x + '" y1="' + MT + '" y2="' + (MT + IH) + '" stroke="var(--fg)" stroke-opacity="0.45" stroke-dasharray="3 3"/>';
-    void rect;
   }
   function hideTip() {
     $('tip').hidden = true;
@@ -662,15 +734,20 @@ if (typeof module !== 'undefined') {
     if (Number.isFinite(state.cp)) setCp(-state.cp);
   });
   $('copy').addEventListener('click', () => {
+    const btn = $('copy');
     const text = $('o-uci').textContent;
-    const done = () => { $('copy').textContent = 'Copied'; setTimeout(() => ($('copy').textContent = 'Copy'), 1400); };
+    const flash = t => { btn.textContent = t; setTimeout(() => (btn.textContent = 'Copy'), 1400); };
+    // Some embedded pages block the clipboard API, so fall back to selecting the text and copying the selection.
     const fallback = () => {
-      const r = document.createRange();
-      r.selectNodeContents($('o-uci'));
-      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      const range = document.createRange();
+      range.selectNodeContents($('o-uci'));
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { /* selection stays for Ctrl+C */ }
+      flash(ok ? 'Copied' : 'Press Ctrl+C');
     };
     try {
-      navigator.clipboard.writeText(text).then(done, fallback);
+      navigator.clipboard.writeText(text).then(() => flash('Copied'), fallback);
     } catch (err) { fallback(); }
   });
 
@@ -704,7 +781,7 @@ if (typeof module !== 'undefined') {
   chart.addEventListener('pointerleave', hideTip);
   chart.addEventListener('pointercancel', hideTip);
 
-  /* ---------- initial state: the engine's own output for +150 cp at material 58 ---------- */
+  /* ---------- initial state: the model's output for +150 cp at material 58 ---------- */
   (function init() {
     const e = cpToWdl(state.cp, state.material).engine;
     state.vals = { w: e.w, d: e.d, l: e.l };
@@ -712,5 +789,5 @@ if (typeof module !== 'undefined') {
   })();
 })();
 </script>
-
-</body></html>
+</body>
+</html>
